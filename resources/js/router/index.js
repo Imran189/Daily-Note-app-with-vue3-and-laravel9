@@ -18,12 +18,13 @@ const router = createRouter({
 
         //admin pages
         {
-            path: "/admin/home",
+            path: "/admin/home/:id",
             name: "adminHome",
             component: HomeAdminView,
             meta: {
                 requiresAuth: true,
             },
+            props: true,
         },
 
         //admin login

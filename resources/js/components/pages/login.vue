@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
+
 import axios from "axios";
 const error = ref("");
 const router = useRouter();
@@ -14,7 +15,11 @@ const login = async () => {
     await axios.post("/api/login", form).then((response) => {
         if (response.data.success) {
             localStorage.setItem("token", response.data.data.token);
-            router.push("/pages");
+            localStorage.setItem("id", response.data.data.id);
+
+            let user_id = localStorage.getItem("id");
+            console.log("user", user_id);
+            router.push(`/admin/home/${user_id}`);
         } else {
             error.value = response.data.message;
         }
@@ -40,6 +45,7 @@ const login = async () => {
 
             <input type="submit" value="Login" />
         </form>
+
         <small style="color: red" v-if="error">{{ error }}</small>
     </div>
 </template>

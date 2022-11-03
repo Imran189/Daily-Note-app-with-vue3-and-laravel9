@@ -4,22 +4,35 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const notes = ref("");
+const user = ref("");
 
 const router = useRouter();
 
 onMounted(async () => {
     getNotes();
+    getUser();
 });
 
+const props = defineProps({
+    id: {
+        type: String,
+        default: "",
+    },
+});
+
+const getUser = async () => {
+    let response = await axios.get(`/api/get_user_name/${props.id}`);
+    user.value = response.data.user;
+    //console.log("userr", user.value);
+};
 const getNotes = async () => {
-    let response = await axios.get("/api/get_notes");
+    let response = await axios.get(`/api/get_notes/${props.id}`);
     notes.value = response.data.notes;
 };
 
 const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("token", "id");
     router.push("/");
-    console.log("token");
 };
 </script>
 <template>
@@ -31,7 +44,7 @@ const logout = () => {
                     <p
                         class="position-absolute top-0 start-50 translate-middle my-3"
                     >
-                        User Name:
+                        User Name: {{ user.name }}
                     </p>
                     <button
                         class="btn btn-primary text-center position-absolute top-0 end-0"
@@ -60,6 +73,7 @@ const logout = () => {
                             <tbody
                                 v-for="(item, index) in notes"
                                 :key="item.id"
+                                v-show="notes"
                             >
                                 <tr>
                                     <th scope="row">{{ index + 1 }}</th>
@@ -79,6 +93,8 @@ const logout = () => {
                                     </td>
                                 </tr>
                             </tbody>
+
+                            <p v-show="!notes">This User Has no data</p>
                         </table>
                     </div>
                     <div class="col-md-2"></div>
