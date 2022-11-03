@@ -1,8 +1,20 @@
 <script setup>
-import { ref } from "vue";
+import axios from "axios";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
+const notes = ref("");
+
 const router = useRouter();
+
+onMounted(async () => {
+    getNotes();
+});
+
+const getNotes = async () => {
+    let response = await axios.get("/api/get_notes");
+    notes.value = response.data.notes;
+};
 
 const logout = () => {
     localStorage.removeItem("token");
@@ -35,7 +47,7 @@ const logout = () => {
                 <div class="row">
                     <div class="col-md-2"></div>
                     <div class="col-md-8">
-                        <table class="table table-dark my-4 mx-3 border">
+                        <table class="table table-dark my-4 border text-center">
                             <thead>
                                 <tr>
                                     <th scope="col">Si N.</th>
@@ -45,20 +57,26 @@ const logout = () => {
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody
+                                v-for="(item, index) in notes"
+                                :key="item.id"
+                            >
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Mark</td>
-                                    <td>Otto</td>
-                                    <td>Otto</td>
-                                    <td>@mdo</td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">2</th>
-                                    <td>Jacob</td>
-                                    <td>Thornton</td>
-                                    <td>Thornton</td>
-                                    <td>@fat</td>
+                                    <th scope="row">{{ index + 1 }}</th>
+                                    <td>{{ item.date }}</td>
+                                    <td>{{ item.note }}</td>
+                                    <td v-if="(item.status = 1)">Read</td>
+                                    <td v-if="(item.status = 0)">Read</td>
+                                    <td>
+                                        <button
+                                            class="btn btn-sm btn-info mx-2"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
