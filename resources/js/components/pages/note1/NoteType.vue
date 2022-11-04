@@ -228,7 +228,7 @@ const logout = () => {
             </div>
         </div>
 
-        <button @click="logout()" class="btn btn-info">Logout</button>
+        <button @click="logout()" class="btn btn-info">ogout</button>
     </div>
 </template>
 
