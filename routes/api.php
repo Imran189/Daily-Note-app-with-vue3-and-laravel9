@@ -28,4 +28,5 @@ Route::controller(AuthController::class)->group(function(){
 Route::controller(NotetableController::class)->group(function(){
     Route::get('/get_notes/{id}','get_notes');
     Route::get('/get_user_name/{id}','get_user_name');
+    Route::post('/save_note/{id}','save_note');
 });

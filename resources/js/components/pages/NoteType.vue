@@ -1,10 +1,16 @@
 <script setup>
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const notes = ref("");
 const user = ref("");
+const showModal = ref(false);
+const hideModal = ref(true);
+const form = ref({
+    note: "",
+    status: "",
+});
 
 const router = useRouter();
 
@@ -30,8 +36,29 @@ const getNotes = async () => {
     notes.value = response.data.notes;
 };
 
+const openModal = () => {
+    showModal.value = !showModal.value;
+};
+const closeModal = () => {
+    showModal.value = !hideModal.value;
+    form.value = "";
+};
+const saveNote = async () => {
+    await axios
+        .post(`/api/save_note/${props.id}`, form.value)
+        .then((response) => {
+            getNotes();
+            getUser();
+            closeModal();
+            toast.fire({
+                icon: "success",
+                title: "Note created Successfully",
+            });
+        });
+};
 const logout = () => {
-    localStorage.removeItem("token", "id");
+    localStorage.removeItem("token");
+    localStorage.removeItem("id");
     router.push("/");
 };
 </script>
@@ -49,8 +76,7 @@ const logout = () => {
                     <button
                         class="btn btn-primary text-center position-absolute top-0 end-0"
                         type="button"
-                        data-bs-toggle="modal"
-                        data-bs-target="#staticBackdrop"
+                        @click="openModal()"
                     >
                         Add new Note
                     </button>
@@ -105,42 +131,48 @@ const logout = () => {
         <!-- Button trigger modal -->
 
         <!-- Modal -->
-        <div
-            class="modal fade"
-            id="staticBackdrop"
-            data-bs-backdrop="static"
-            data-bs-keyboard="false"
-            tabindex="-1"
-            aria-labelledby="staticBackdropLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">
-                            Modal title
-                        </h5>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        ></button>
+        <div class="modal main__modal my-3" :class="{ show: showModal }">
+            <div class="modal__content bg-dark text-white border border-light">
+                <span
+                    class="modal__close btn__close--modal"
+                    @click="closeModal()"
+                    >×</span
+                >
+                <h3 class="modal__title">Add Education</h3>
+                <hr class="modal_line" />
+                <br />
+                <form @submit.prevent="saveNote()">
+                    <label class="form-label">Note</label>
+                    <textarea
+                        type="text"
+                        class="form-control"
+                        v-model="form.note"
+                    />
+
+                    <div class="my-2">
+                        <label class="form-label">status</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            v-model="form.status"
+                        />
                     </div>
-                    <div class="modal-body">...</div>
-                    <div class="modal-footer">
+
+                    <br />
+                    <hr class="modal_line" />
+                    <div class="model__footer">
                         <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
+                            class="btn mx-2 btn-danger"
+                            @click="closeModal()"
                         >
-                            Close
+                            Cancel
                         </button>
-                        <button type="button" class="btn btn-primary">
-                            Understood
+                        <button type="submit" class="btn btn-primary">
+                            Save
                         </button>
                     </div>
-                </div>
+                </form>
+                {{ form }}
             </div>
         </div>
 
@@ -148,4 +180,52 @@ const logout = () => {
     </div>
 </template>
 
-<style></style>
+<style scoped>
+.show {
+    display: block !important;
+    transition: 0.3s ease all;
+}
+
+.modal__content {
+    background-color: white;
+    margin: auto;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 2px 15px rgb(35 40 47 / 25%);
+    position: relative;
+    border: none;
+    border-radius: 7px;
+}
+
+.modal__close {
+    color: #aaaaaa;
+    font-size: 28px;
+    font-weight: bold;
+    top: 5px;
+    right: 15px;
+    position: absolute;
+    cursor: pointer;
+}
+
+.modal__title {
+    margin-bottom: 20px;
+}
+.modal_line {
+    border: 1px solid #e0e0e0;
+    margin-left: -20px;
+    margin-right: -20px;
+}
+
+.modal__items {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.model__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+</style>

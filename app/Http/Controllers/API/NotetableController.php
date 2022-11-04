@@ -23,4 +23,14 @@ class NotetableController extends Controller
             'user'=>$data
         ],200);
     }
+
+    public function save_note(Request $request, $id){
+        $data= new Notetable();
+        $data->user_id =$id;
+        $data->date = now();
+        $data->note =$request->note;
+        $data->status =$request->status;
+        $data->save();
+
+    }
 }
