@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import notFound from "../components/notFound.vue";
 import HomeView from "../components/pages/home.vue";
 import LoginView from "../components/pages/login.vue";
-import HomeAdminView from "../components/pages/NoteType.vue";
+import HomeAdminView from "../components/pages/note1/NoteType.vue";
+import NoteEdit from "../components/pages/note1/editNote.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,9 +19,17 @@ const router = createRouter({
 
         //admin pages
         {
-            path: "/admin/home/:id",
+            path: "/admin/home",
             name: "adminHome",
             component: HomeAdminView,
+            meta: {
+                requiresAuth: true,
+            },
+        },
+        {
+            path: "/note/edit/:id",
+            name: "NoteEdit",
+            component: NoteEdit,
             meta: {
                 requiresAuth: true,
             },

@@ -19,7 +19,7 @@ const login = async () => {
 
             let user_id = localStorage.getItem("id");
             console.log("user", user_id);
-            router.push(`/admin/home/${user_id}`);
+            router.push("/admin/home");
         } else {
             error.value = response.data.message;
         }

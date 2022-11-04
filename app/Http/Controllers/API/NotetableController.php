@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class NotetableController extends Controller
 {
     public function get_notes($id){
-        $data = Notetable::where('user_id',$id)->orderBy('id','DESC')->get();
+        $data = Notetable::where('user_id',$id)->orderBy('status','DESC')->get();
 
         return response()->json([
             'notes'=> $data
@@ -32,5 +32,34 @@ class NotetableController extends Controller
         $data->status =$request->status;
         $data->save();
 
+    }
+
+    public function update_status(Request $request,$id){
+        $data = Notetable::findOrFail($id);
+
+        $data->status = $request->status;
+        $data->save();
+        return response()->json($request->status,200);
+    }
+
+    public function delete_note($id){
+        $data = Notetable::findOrFail($id);
+        $data->delete();
+        return response()->json(200);
+    }
+
+    public function get_edit_note($id){
+        $data = Notetable::find($id);
+         return response()->json([
+            'note'=>$data
+         ],200);
+    }
+
+    public function update_note(Request $request,$id){
+        $data= Notetable::find($id);
+        $data->note=$request->note;
+        $data->date=$request->date;
+
+        $data->save();
     }
 }

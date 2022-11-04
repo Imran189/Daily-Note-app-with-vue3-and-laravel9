@@ -26,13 +26,15 @@ const props = defineProps({
     },
 });
 
+const user_id = localStorage.getItem("id");
+
 const getUser = async () => {
-    let response = await axios.get(`/api/get_user_name/${props.id}`);
+    let response = await axios.get("/api/get_user_name/" + user_id);
     user.value = response.data.user;
     //console.log("userr", user.value);
 };
 const getNotes = async () => {
-    let response = await axios.get(`/api/get_notes/${props.id}`);
+    let response = await axios.get("/api/get_notes/" + user_id);
     notes.value = response.data.notes;
 };
 
@@ -41,7 +43,7 @@ const openModal = () => {
 };
 const closeModal = () => {
     showModal.value = !hideModal.value;
-    form.value = "";
+    form.value = {};
 };
 const saveNote = async () => {
     await axios
@@ -55,6 +57,41 @@ const saveNote = async () => {
                 title: "Note created Successfully",
             });
         });
+};
+const onRead = async (id, status) => {
+    const formData = new FormData();
+    formData.append("status", status);
+    axios.post("/api/update_status/" + id, formData).then((response) => {
+        getNotes();
+        getUser();
+        toast.fire({
+            icon: "success",
+            title: "Note Status updated Successfully",
+        });
+    });
+};
+const onDeleteNote = (id) => {
+    Swal.fire({
+        title: "Are you sure..?",
+        text: "you can't go back",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes,delete it",
+    }).then((result) => {
+        if (result.value) {
+            axios.get("/api/delete_note/" + id).then(() => {
+                Swal.fire("Delete", "Note deleted Successfully", "success");
+                getNotes();
+                getUser();
+            });
+        }
+    });
+};
+const onEditNote = (id) => {
+    console.log("edit clicked");
+    router.push("/note/edit/" + id);
 };
 const logout = () => {
     localStorage.removeItem("token");
@@ -105,22 +142,44 @@ const logout = () => {
                                     <th scope="row">{{ index + 1 }}</th>
                                     <td>{{ item.date }}</td>
                                     <td>{{ item.note }}</td>
-                                    <td v-if="(item.status = 1)">Read</td>
-                                    <td v-if="(item.status = 0)">Read</td>
+                                    <td>
+                                        <p
+                                            @click.prevent="onRead(item.id, 0)"
+                                            class="badge rounded-pill bg bg-success"
+                                            v-if="item.status == 1"
+                                        >
+                                            Read
+                                        </p>
+                                        <p
+                                            @click.prevent="onRead(item.id, 1)"
+                                            class="badge badge-sm rounded-pill bg bg-secondary"
+                                            v-if="item.status == 0"
+                                        >
+                                            Unread
+                                        </p>
+                                    </td>
+
                                     <td>
                                         <button
                                             class="btn btn-sm btn-info mx-2"
+                                            @click="onEditNote(item.id)"
                                         >
                                             Edit
                                         </button>
-                                        <button class="btn btn-sm btn-danger">
+                                        <button
+                                            class="btn btn-sm btn-danger"
+                                            @click.prevent="
+                                                onDeleteNote(item.id)
+                                            "
+                                        >
                                             Delete
                                         </button>
                                     </td>
                                 </tr>
                             </tbody>
-
-                            <p v-show="!notes">This User Has no data</p>
+                            <p class="text-center" v-if="notes.length <= 0">
+                                This User Has no data yet
+                            </p>
                         </table>
                     </div>
                     <div class="col-md-2"></div>
@@ -161,18 +220,11 @@ const logout = () => {
                     <br />
                     <hr class="modal_line" />
                     <div class="model__footer">
-                        <button
-                            class="btn mx-2 btn-danger"
-                            @click="closeModal()"
-                        >
-                            Cancel
-                        </button>
                         <button type="submit" class="btn btn-primary">
                             Save
                         </button>
                     </div>
                 </form>
-                {{ form }}
             </div>
         </div>
 
@@ -181,6 +233,9 @@ const logout = () => {
 </template>
 
 <style scoped>
+.bg {
+    cursor: pointer;
+}
 .show {
     display: block !important;
     transition: 0.3s ease all;
